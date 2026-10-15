@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia: Mitos y Verdades de la Programación</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --accent-red: #da3633;
+            --accent-red-hover: #f85149;
+            --neon-blue: #58a6ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--neon-blue);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Pantalla de Inicio */
+        .start-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .start-screen p {
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Pantalla de Preguntas */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #8b949e;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #30363d;
+            border-color: var(--neon-blue);
+        }
+
+        .option-btn.correct {
+            background-color: rgba(35, 134, 54, 0.2);
+            border-color: var(--accent-green);
+            color: #3fb950;
+        }
+
+        .option-btn.incorrect {
+            background-color: rgba(218, 54, 51, 0.2);
+            border-color: var(--accent-red);
+            color: #ff7b72;
+        }
+
+        .feedback-box {
+            background-color: #0d1117;
+            border-left: 4px solid var(--neon-blue);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-green-hover);
+        }
+
+        /* Pantalla de Resultados */
+        .result-screen {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .result-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin: 20px 0;
+        }
+
+        .result-msg {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>⚡ Expo Carreras: Mitos y Verdades</h1>
+            <p>Descubrí qué hay de cierto en el mundo de la programación</p>
+        </header>
+
+        <!-- PANTALLA DE INICIO -->
+        <div id="startScreen" class="screen active start-screen">
+            <p>Poné a prueba tus conocimientos sobre desarrollo de software y tecnología con este desafío rápido de 3 preguntas aleatorias.</p>
+            <button class="btn-primary" onclick="iniciarJuego()">¡Comenzar Desafío!</button>
+        </div>
+
+        <!-- PANTALLA DE PREGUNTAS -->
+        <div id="quizScreen" class="screen">
+            <div class="quiz-header">
+                <span id="questionCounter">Pregunta 1 de 3</span>
+                <span id="scoreDisplay">Puntaje: 0</span>
+            </div>
+            <div id="questionText" class="question-text">Cargando pregunta...</div>
+            <div id="optionsContainer" class="options-container"></div>
+            <div id="feedbackBox" class="feedback-box"></div>
+            <button id="nextBtn" class="btn-primary" style="display: none;" onclick="siguientePregunta()">Siguiente Pregunta</button>
+        </div>
+
+        <!-- PANTALLA DE RESULTADOS -->
+        <div id="resultScreen" class="screen result-screen">
+            <h2>¡Desafío Completado!</h2>
+            <div id="finalScore" class="result-score">3/3</div>
+            <p id="resultMessage" class="result-msg">¡Excelente trabajo!</p>
+            <button class="btn-primary" onclick="reiniciarJuego()">Volver a Jugar</button>
+        </div>
+    </div>
+
+    <script>
+        // Banco de 8 preguntas
+        const bancoPreguntas = [
+            {
+                pregunta: "Para aprender a programar, obligatoriamente tenés que ser un genio en matemáticas avanzadas.",
+                opciones: [
+                    "A) ¡Verdad! Si no sé cálculo avanzado, no puedo programar.",
+                    "B) ¡Mito! La lógica y la resolución de problemas son mucho más importantes."
+                ],
+                correcta: 1,
+                explicacion: "¡Mito! Salvo para áreas muy específicas como IA avanzada o gráficos 3D, la programación cotidiana requiere más lógica y razonamiento que matemática compleja."
+            },
+            {
+                pregunta: "Los programadores profesionales se saben todo el código de memoria y nunca necesitan buscar nada.",
+                opciones: [
+                    "A) ¡Mito! Buscar en Google, documentación y Stack Overflow es parte del día a día.",
+                    "B) ¡Verdad! Un buen dev jamás consulta internet mientras escribe código."
+                ],
+                correcta: 0,
+                explicacion: "¡Mito! Saber programar no es memorizar sintaxis, sino entender cómo resolver problemas y saber consultar la documentación."
+            },
+            {
+                pregunta: "Si el código de una aplicación funciona al primer intento sin tirar ningún error, significa que...",
+                opciones: [
+                    "A) Sos un genio absoluto y todo está perfecto.",
+                    "B) Algo sospechoso pasa y seguro explota en producción."
+                ],
+                correcta: 1,
+                explicacion: "¡Clásico chiste de programadores! El código que funciona perfectamente de primera siempre genera desconfianza y requiere pruebas exhaustivas."
+            },
+            {
+                pregunta: "HTML es un lenguaje de programación con bucles y variables lógicas.",
+                opciones: [
+                    "A) ¡Verdad! Se pueden hacer cálculos matemáticos directos en HTML.",
+                    "B) ¡Mito! HTML es un lenguaje de marcado para estructurar páginas web."
+                ],
+                correcta: 1,
+                explicacion: "¡Mito! HTML le da estructura y etiquetas a la web, pero necesita lenguajes como JavaScript o un backend para tener lógica de programación."
+            },
+            {
+                pregunta: "Programar es una actividad 100% solitaria donde estás encerrado sin hablar con nadie.",
+                opciones: [
+                    "A) ¡Mito! Gran parte del trabajo implica coordinar en equipo, diseñar bases de datos y entender al usuario.",
+                    "B) ¡Verdad! Nadie habla jamás en el mundo del desarrollo de software."
+                ],
+                correcta: 0,
+                explicacion: "¡Mito! El desarrollo moderno es muy colaborativo: se trabaja en equipos multidisciplinarios, se hacen revisiones de código y se planean proyectos en conjunto."
+            },
+            {
+                pregunta: "Git y GitHub sirven exactamente para lo mismo.",
+                opciones: [
+                    "A) ¡Verdad! Son dos nombres para el mismo programa en la nube.",
+                    "B) ¡Mito! Git es el sistema de control de versiones local y GitHub es la plataforma en la nube."
+                ],
+                correcta: 1,
+                explicacion: "¡Mito! Git funciona en tu computadora para rastrear cambios, mientras que GitHub permite compartir el código online y colaborar con otros devs."
+            },
+            {
+                pregunta: "Si un programa corre bien en tu computadora, funcionará exactamente igual en cualquier otro dispositivo sin problemas.",
+                opciones: [
+                    "A) ¡Mito! Puede fallar por diferencias de entorno, sistemas operativos o dependencias.",
+                    "B) ¡Verdad! El software es universal y nunca falla en otros equipos."
+                ],
+                correcta: 0,
+                explicacion: "¡Mito! De ahí la famosa frase: 'En mi máquina funciona'. Gestionar entornos de servidores y dependencias es clave."
+            },
+            {
+                pregunta: "Para crear una aplicación web dinámica que guarde datos de usuarios o ventas, solo se necesita HTML y CSS.",
+                opciones: [
+                    "A) ¡Verdad! Con solo HTML y CSS podés conectar bases de datos seguras.",
+                    "B) ¡Mito! Necesitás un lenguaje de backend (como PHP, Python o Node.js) y una base de datos (como MySQL)."
+                ],
+                correcta: 1,
+                explicacion: "¡Mito! HTML y CSS corren en el navegador del usuario (frontend), mientras que la lógica de negocio y los datos se procesan en el servidor (backend)."
+            }
+        ];
+
+        let preguntasSeleccionadas = [];
+        let preguntaActualIndex = 0;
+        let puntaje = 0;
+
+        function iniciarJuego() {
+            // Mezclar el banco completo y tomar 3 al azar
+            preguntasSeleccionadas = [...bancoPreguntas]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            
+            preguntaActualIndex = 0;
+            puntaje = 0;
+
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('quizScreen').classList.add('active');
+            
+            cargarPregunta();
+        }
+
+        function cargarPregunta() {
+            const q = preguntasSeleccionadas[preguntaActualIndex];
+            document.getElementById('questionCounter').innerText = `Pregunta ${preguntaActualIndex + 1} de 3`;
+            document.getElementById('scoreDisplay').innerText = `Puntaje: ${puntaje}`;
+            document.getElementById('questionText').innerText = q.pregunta;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            q.opciones.forEach((opcion, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opcion;
+                btn.onclick = () => seleccionarRespuesta(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('feedbackBox').classList.remove('show');
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function seleccionarRespuesta(indexOpcion, btnElement) {
+            const q = preguntasSeleccionadas[preguntaActualIndex];
+            const botones = document.querySelectorAll('.option-btn');
+            
+            // Deshabilitar todas las opciones tras responder
+            botones.forEach(b => b.disabled = true);
+
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.innerText = q.explicacion;
+            feedbackBox.classList.add('show');
+
+            if (indexOpcion === q.correcta) {
+                btnElement.classList.add('correct');
+                puntaje++;
+                document.getElementById('scoreDisplay').innerText = `Puntaje: ${puntaje}`;
+            } else {
+                btnElement.classList.add('incorrect');
+                botones[q.correcta].classList.add('correct');
+            }
+
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function siguientePregunta() {
+            preguntaActualIndex++;
+            if (preguntaActualIndex < preguntasSeleccionadas.length) {
+                cargarPregunta();
+            } else {
+                mostrarResultados();
+            }
+        }
+
+        function mostrarResultados() {
+            document.getElementById('quizScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+            
+            document.getElementById('finalScore').innerText = `${puntaje} / 3`;
+            
+            const mensaje = document.getElementById('resultMessage');
+            if (puntaje === 3) {
+                mensaje.innerText = "¡Excelente! Tenés madera de programador/a.";
+            } else if (puntaje === 2) {
+                mensaje.innerText = "¡Muy bien! Conoces bastante sobre desarrollo.";
+            } else {
+                mensaje.innerText = "¡Buen intento! En la carrera vas a aprender todo esto.";
+            }
+        }
+
+        function reiniciarJuego() {
+            document.getElementById('resultScreen').classList.remove('active');
+            iniciarJuego();
+        }
+    </script>
+</body>
+</html>
